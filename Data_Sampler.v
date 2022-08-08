@@ -23,10 +23,10 @@ module Data_Sampler (
   output   reg             Sampler_Sample_Valid);
   
   wire           First_Sample;
+  wire           Second_Sample;
   wire           Third_Sample;
   reg   [1:0]    Ones_Num;
   reg   [1:0]    Ones_Num_comb;
-  reg            enable;
   ////////////////////sampler sequentional logic/////////////////
   always@(posedge Sampler_CLK or negedge Sampler_RST)
   begin
@@ -57,23 +57,21 @@ module Data_Sampler (
                         end
           endcase
         Sampler_Sample_Valid = 1'b1;
-        enable = 1'b0;
       end
-    else if((First_Sample | enable) & Sampler_data_samp_en)
+    else if((First_Sample | Second_Sample) & Sampler_data_samp_en)
       begin
         Ones_Num_comb = Ones_Num + Sampler_RX_IN;
         Sampler_Sample_Valid = 1'b0;
-        enable = 1'b1;
         Sampler_sample = 1'b0;
       end 
     else
       begin
         Ones_Num_comb = 2'b0;
         Sampler_Sample_Valid = 1'b0;
-        enable = 1'b0;
         Sampler_sample = 1'b0;
       end
   end
   assign First_Sample  = &(~(Sampler_edge_cnt ^ (Sampler_prescale>>1)));
+  assign Second_Sample = &(~(Sampler_edge_cnt ^ (Sampler_prescale>>1)+2'b01));
   assign Third_Sample  = &(~(Sampler_edge_cnt ^ ((Sampler_prescale>>1)+2'b10)));
 endmodule
